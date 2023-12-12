@@ -11,6 +11,8 @@ import SearchScreen from "./SearchScreen";
 import CartScreen from "./CartScreen";
 import { Feather } from '@expo/vector-icons';
 import DetailAccount from "./DetailAccount";
+import { useSelector } from "react-redux";
+
 const Tab = createBottomTabNavigator();
 const screenOptions = {
   tabBarShowLabel: false,
@@ -30,6 +32,8 @@ const screenOptions = {
 };
 
 const BottomNavigation = () => {
+  const userId = useSelector((state) => state.userId);
+
   return (
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen
@@ -84,8 +88,8 @@ const BottomNavigation = () => {
         }}
       />
       <Tab.Screen
-        name="detailaccount"
-        component={DetailAccount}
+        name={userId ? 'detailaccount' : 'account'}
+        component={userId ? DetailAccount : AccountScreen }
         options={{
           tabBarIcon: ({ focused }) => {
             return (

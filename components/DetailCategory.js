@@ -1,11 +1,14 @@
-import React from "react";
+import React , { useEffect , useState } from "react";
 import { View, Text, Image, FlatList, StyleSheet } from "react-native";
 import HeaderGoBack from "./HeaderGoBack";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 
 const DetailCategory = () => {
   const navigation = useNavigation();
+  const idCategory = useSelector((state) => state.idCategory);
+  console.log(idCategory);
   const handleDetailProduct = () => {
     navigation.navigate("detailproduct");
   };
@@ -20,7 +23,7 @@ const DetailCategory = () => {
         <Text onPress={handleDetailProduct} style={styles.productName}>
           {item.name}
         </Text>
-        <Text style={styles.productPrice}>{item.price} VND</Text>
+        <Text style={styles.productPrice}>{formatVND(item.price)} VND</Text>
 
         <Button
           icon="cart-arrow-down"
@@ -46,13 +49,28 @@ const DetailCategory = () => {
     },
    
   ];
+  const [listProduct , setListProduct] = useState([])
+  useEffect(()=>{
+    const getProduct = async () =>{
+      const res = await fetch(`http://localhost:8889/api/food/${idCategory}`)
+      const data = await res.json()
+      setListProduct(data)
+    }
+    getProduct()
+  },[])
+  function formatVND(amount) {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  }
   return (
     <View>
       <HeaderGoBack title="Danh mục sản phẩm" />
 
       <View style={styles.main_product}>
         <FlatList
-          data={dataFake}
+          data={listProduct}
           renderItem={renderProductItem}
           keyExtractor={(item) => item.name}
           numColumns={2}
@@ -64,9 +82,7 @@ const DetailCategory = () => {
 
 export default DetailCategory;
 const styles = StyleSheet.create({
-  main_product: {
-    paddingBottom : 280
-  },
+ 
   item_product: {
     flex: 1,
     margin: 5,

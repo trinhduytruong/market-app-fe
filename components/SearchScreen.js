@@ -1,9 +1,13 @@
-import React from "react";
-import { View, Text, StyleSheet, FlatList, Image } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity} from "react-native";
 import HeaderGoBack from "./HeaderGoBack";
 import { TextInput } from "react-native-paper";
 import { Button } from "react-native-paper";
+
+import axios from "axios";
 const SearchScreen = () => {
+  const [dataSearch , setDataSearch ] = useState([])
+  const [keyWord , setKeyWord] = useState('')
   const dataFake = [
     {
       name: "Cánh gà giữa nhập khẩu đông lạnh 500g (12 - 17 miếng)",
@@ -17,8 +21,6 @@ const SearchScreen = () => {
         "https://cdn.tgdd.vn/Products/Images/8790/297340/bhx/-202306211455508775.jpg",
       price: 200000,
     },
-   
-   
   ];
   const renderProductItem = ({ item }) => {
     return (
@@ -39,15 +41,31 @@ const SearchScreen = () => {
       </View>
     );
   };
+  const handleSearch = async (keywordBody) => {
+    console.log(keyWord);
+    try {
+      const response = await axios.post(
+        `http://localhost:8889/api/food/search/`,
+        {
+          keyword: keywordBody 
+        }
+      );
+      console.log(response);
+      setDataSearch(response.data)
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+    }
+  };
   return (
     <View style={styles.container}>
       <HeaderGoBack title="Tìm kiếm" />
-      <TextInput label="Từ khoá" right={<TextInput.Icon icon="magnify" />} />
+      <TextInput label="Từ khoá"   onChangeText={text => setKeyWord(text)} right={<TextInput.Icon icon="magnify" />} />
       <Button
         icon="magnify"
         mode="contained"
         style={styles.btn_searh}
-        onPress={() => console.log("Pressed")}>
+        onPress={()=>handleSearch(keyWord)}
+        >
         Tìm kiếm
       </Button>
 
@@ -55,7 +73,8 @@ const SearchScreen = () => {
 
       <View style={styles.main_product}>
         <FlatList
-          data={dataFake}
+          key={(item) => item._id}
+          data={dataSearch}
           renderItem={renderProductItem}
           keyExtractor={(item) => item.name}
           numColumns={2}

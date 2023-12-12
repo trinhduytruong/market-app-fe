@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,65 @@ import {
 } from "react-native";
 import HeaderGoBack from "./HeaderGoBack";
 import { Tab } from "@rneui/themed";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+
+import { useNavigation } from '@react-navigation/native';
 
 const AccountScreen = () => {
-  const [index, setIndex] = React.useState(0);
+  const [index, setIndex] = useState(0);
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneLogin , setPhoneLogin] = useState("")
+  const [passwordLogin , setPassWordLogin] = useState("")
+  
+  const dispatch = useDispatch();
+  const navigate = useNavigation()
+  const handleRegister = () => {
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    const userData = {
+      name: fullName,
+      phone: phoneNumber,
+      password: password,
+    };
+
+    axios
+      .post("http://localhost:8889/api/user/register", userData)
+      .then((response) => {
+        alert("Đăng ký thành công");
+        // handle response
+        setIndex(1);
+      })
+      .catch((error) => {
+        alert("Thông tin không hợp lệ");
+      });
+  }
+
+  const handleLogin = () => {
+    const loginData = {
+      phone: phoneLogin,
+      password: passwordLogin,
+    };
+
+    axios
+      .post("http://localhost:8889/api/user/login", loginData)
+      .then((response) => {
+        alert("Đăng nhập thành công");
+        // Dispatch action to Redux store
+        dispatch({ type: "SET_USER_ID", payload: response.data.user._id });
+        console.log("User Logged In:", response.data.user);
+        navigate.navigate('detailaccount')
+      })
+      .catch((error) => {
+        alert("Thông tin đăng nhập không chính xác");
+      });
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -31,7 +87,7 @@ const AccountScreen = () => {
                   style={styles.TextInput}
                   placeholder="Họ và tên"
                   placeholderTextColor="#fff"
-                  onChangeText={(text) => setUsername(text)}
+                  onChangeText={(text) => setFullName(text)}
                   autoCapitalize="none"
                 />
               </View>
@@ -65,7 +121,9 @@ const AccountScreen = () => {
                   autoCapitalize="none"
                 />
               </View>
-              <TouchableOpacity style={styles.loginBtn}>
+              <TouchableOpacity
+                style={styles.loginBtn}
+                onPress={handleRegister}>
                 <Text style={styles.loginText}>Đăng Ký</Text>
               </TouchableOpacity>
             </View>
@@ -75,14 +133,13 @@ const AccountScreen = () => {
           <View style={styles.tabContent}>
             <View style={styles.container}>
               <StatusBar style="auto" />
-            
 
               <View style={styles.inputView}>
                 <TextInput
                   style={styles.TextInput}
                   placeholder="Số điện thoại."
                   placeholderTextColor="#fff"
-                  onChangeText={(text) => setPhoneNumber(text)}
+                  onChangeText={(text) => setPhoneLogin(text)}
                   autoCapitalize="none"
                 />
               </View>
@@ -92,18 +149,19 @@ const AccountScreen = () => {
                   placeholder="Mật khẩu."
                   placeholderTextColor="#fff"
                   secureTextEntry={true}
-                  onChangeText={(text) => setPassword(text)}
+                  onChangeText={(text) =>setPassWordLogin(text)}
                   autoCapitalize="none"
                 />
               </View>
-            
-              <TouchableOpacity style={styles.loginBtn}>
+
+              <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
                 <Text style={styles.loginText}>Đăng Nhập</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
       </View>
+      
     </View>
   );
 };

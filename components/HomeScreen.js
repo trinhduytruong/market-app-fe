@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,30 +14,60 @@ import Swiper from "react-native-swiper";
 import { AntDesign } from "@expo/vector-icons";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import Toast from 'react-native-toast-message';
 
+import axios from "axios";
 const HomeScreen = () => {
   const navigation = useNavigation();
-  const handleDetailProduct = () => {
+  const dispatch = useDispatch();
+  const userId = useSelector((state) => state.userId);
+  
+  const handleDetailProduct = (id) => {
+    dispatch({ type: "SET_PRODUCT_ID", payload: id });
     navigation.navigate("detailproduct");
   };
-  const handleDetailCategory = () => {
+  const handleDetailCategory = (id) => {
+    dispatch({ type: "SET_CATEGORY_ID", payload: id });
     navigation.navigate("detailcategory");
   };
-  const dataFake = [
-    {
-      name: "Cánh gà giữa nhập khẩu đông lạnh 500g (12 - 17 miếng)",
-      image:
-        "https://cdn.tgdd.vn/Products/Images/8790/297340/bhx/-202306211455508775.jpg",
-      price: 200000,
-    },
-    {
-      name: "Cánh gà giữa nhập khẩu đông lạnh 500g (12 - 17 miếng)",
-      image:
-        "https://cdn.tgdd.vn/Products/Images/8790/297340/bhx/-202306211455508775.jpg",
-      price: 200000,
-    },
-  ];
 
+  const handleAddToCart = async (productId) => {
+    if (!userId) {
+      // Hiển thị thông báo nếu không có userId
+      Toast.show({
+        type: "error",
+        text1: "Lỗi",
+        text2: "Bạn chưa đăng nhập",
+      });
+      return; // Dừng hàm nếu không có userId
+    }
+  
+    try {
+      const response = await axios.post(
+        `http://localhost:8889/api/user/addtocart/${userId}`,
+        {
+          foodId: productId,
+          quantity: 1, // hoặc số lượng mà người dùng chọn
+        }
+      );
+      Toast.show({
+        type: 'success',
+        text1: 'Thành công',
+        text2: 'Sản phẩm đã được thêm vào giỏ hàng.',
+      });
+      dispatch({ type: "UPDATE_CART" });
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể thêm sản phẩm vào giỏ hàng.',
+      });
+      
+    }
+  };
   const renderProductItem = ({ item }) => {
     return (
       <View style={styles.item_product}>
@@ -46,14 +76,17 @@ const HomeScreen = () => {
           resizeMode="contain"
           style={styles.img_product}
         />
-        <Text onPress={handleDetailProduct} style={styles.productName}>
+        <Text
+          onPress={() => handleDetailProduct(item._id)}
+          style={styles.productName}>
           {item.name}
         </Text>
-        <Text style={styles.productPrice}>{item.price} VND</Text>
+        <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
 
         <Button
           icon="cart-arrow-down"
           mode="contained"
+          onPress={()=>handleAddToCart(item._id)}
           style={styles.btn_add_to_cart}>
           Thêm vào giỏ
         </Button>
@@ -61,117 +94,103 @@ const HomeScreen = () => {
     );
   };
 
+  const [listCategory, setListCategory] = useState([]);
+  const [listProduct, setListProduct] = useState([]);
+  useEffect(() => {
+    const getCate = async () => {
+      const res = await fetch(`http://localhost:8889/api/category`);
+      const data = await res.json();
+      setListCategory(data);
+    };
+    getCate();
+
+    const getProduct = async () => {
+      const res = await fetch(
+        `http://localhost:8889/api/food/6576e938b2c51899369460d9`
+      );
+      const data = await res.json();
+      setListProduct(data);
+    };
+    getProduct();
+  }, []);
+  function formatVND(amount) {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  }
+
+  
   return (
     <View>
       <Header />
-
-      <View style={styles.sliderContainer}>
-        <Swiper style={styles.wrapper}>
-          <View style={styles.slide1}>
-            <Image
-              source={require("../assets/Vinid-750x356.png")}
-              resizeMode="contain"
-              style={styles.sliderImage}
-            />
+      <ScrollView>
+        <View style={styles.sliderContainer}>
+          <Swiper style={styles.wrapper}>
+            <View style={styles.slide1}>
+              <Image
+                source={require("../assets/Vinid-750x356.png")}
+                resizeMode="contain"
+                style={styles.sliderImage}
+              />
+            </View>
+            <View style={styles.slide2}>
+              <Image
+                source={require("../assets/e76527be-bannerweb_dichoonline_1920x1080.webp")}
+                resizeMode="contain"
+                style={styles.sliderImage}
+              />
+            </View>
+            <View style={styles.slide3}>
+              <Image
+                source={require("../assets/e76527be-bannerweb_dichoonline_1920x1080.webp")}
+                resizeMode="contain"
+                style={styles.sliderImage}
+              />
+            </View>
+          </Swiper>
+        </View>
+        <View>
+          <Text style={styles.text_category}>Danh mục sản phẩm</Text>
+        </View>
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+          <View style={styles.main_category}>
+            {listCategory &&
+              listCategory.map((value, id) => {
+                return (
+                  <>
+                    <TouchableOpacity
+                      style={styles.touchableArea}
+                      onPress={() => handleDetailCategory(value._id)}>
+                      <View style={styles.item_category}>
+                        <Image
+                          source={require("../assets/img-thucphamtonghop.jpeg")}
+                          resizeMode="contain"
+                          style={styles.img_item}
+                        />
+                        <Text style={styles.name_category}>{value.name}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </>
+                );
+              })}
           </View>
-          <View style={styles.slide2}>
-            <Image
-              source={require("../assets/e76527be-bannerweb_dichoonline_1920x1080.webp")}
-              resizeMode="contain"
-              style={styles.sliderImage}
-            />
-          </View>
-          <View style={styles.slide3}>
-            <Image
-              source={require("../assets/e76527be-bannerweb_dichoonline_1920x1080.webp")}
-              resizeMode="contain"
-              style={styles.sliderImage}
-            />
-          </View>
-        </Swiper>
-      </View>
-      <View>
-        <Text style={styles.text_category}>Danh mục sản phẩm</Text>
-      </View>
-      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-        <View style={styles.main_category}>
-          <TouchableOpacity
-            style={styles.touchableArea}
-            onPress={handleDetailCategory}>
-            <View style={styles.item_category}>
-              <Image
-                source={require("../assets/img-thucphamtonghop.jpeg")}
-                resizeMode="contain"
-                style={styles.img_item}
-              />
-              <Text style={styles.name_category}>Thực phẩm tổng hợp</Text>
-            </View>
-          </TouchableOpacity>
+        </ScrollView>
 
-          <TouchableOpacity
-            style={styles.touchableArea}
-            onPress={handleDetailCategory}>
-            <View style={styles.item_category}>
-              <Image
-                source={require("../assets/img-thucphamtonghop.jpeg")}
-                resizeMode="contain"
-                style={styles.img_item}
-              />
-              <Text style={styles.name_category}>Thực phẩm tổng hợp</Text>
-            </View>
-          </TouchableOpacity>
+        <View>
+          <Text style={styles.name_cate_main}>Sữa</Text>
+        </View>
 
-          <TouchableOpacity
-            style={styles.touchableArea}
-            onPress={handleDetailCategory}>
-            <View style={styles.item_category}>
-              <Image
-                source={require("../assets/img-thucphamtonghop.jpeg")}
-                resizeMode="contain"
-                style={styles.img_item}
-              />
-              <Text style={styles.name_category}>Thực phẩm tổng hợp</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.touchableArea}
-            onPress={handleDetailCategory}>
-            <View style={styles.item_category}>
-              <Image
-                source={require("../assets/img-thucphamtonghop.jpeg")}
-                resizeMode="contain"
-                style={styles.img_item}
-              />
-              <Text style={styles.name_category}>Thực phẩm tổng hợp</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.touchableArea}
-            onPress={handleDetailCategory}>
-            <View style={styles.item_category}>
-              <Image
-                source={require("../assets/img-thucphamtonghop.jpeg")}
-                resizeMode="contain"
-                style={styles.img_item}
-              />
-              <Text style={styles.name_category}>Thực phẩm tổng hợp</Text>
-            </View>
-          </TouchableOpacity>
+        <View style={styles.main_product}>
+          <FlatList
+            data={listProduct}
+            renderItem={renderProductItem}
+            keyExtractor={(item) => item.name}
+            numColumns={2}
+          />
         </View>
       </ScrollView>
-
-      <View>
-        <Text style={styles.name_cate_main}>Thực phẩm tổng hợp</Text>
-      </View>
-
-      <View style={styles.main_product}>
-        <FlatList
-          data={dataFake}
-          renderItem={renderProductItem}
-          keyExtractor={(item) => item.name}
-          numColumns={2}
-        />
-      </View>
+      <Toast />
     </View>
   );
 };
@@ -179,6 +198,9 @@ const HomeScreen = () => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
+  main_product: {
+    marginBottom: 200,
+  },
   btn_add_to_cart: {
     backgroundColor: "#00CC33",
   },
