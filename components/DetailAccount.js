@@ -12,17 +12,21 @@ import {
   TextInput,
 } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import Spinner from "react-native-loading-spinner-overlay";
 import axios from "axios";
+import { server } from "../server";
 const DetailAccount = () => {
   const navigation = useNavigation();
   const [visible, setVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [nameGruop, setNameGruop] = useState("");
   const [dataUser, setDataUser] = useState();
-  
+  const [lengthList, setLengthList] = useState(0);
+  const [lengthRecipe, setlengthRecipe] = useState(0);
+
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
   const containerStyle = { backgroundColor: "white", padding: 20 };
@@ -31,13 +35,54 @@ const DetailAccount = () => {
 
   useEffect(() => {
     const getData = async () => {
-      const res = await fetch(`http://localhost:8889/api/user/${userId}`);
+      const res = await fetch(`${server}/user/${userId}`);
       const data = await res.json();
 
       setDataUser(data);
     };
     getData();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const getData = async () => {
+        const res = await fetch(`${server}/user/${userId}`);
+        const data = await res.json();
+        setDataUser(data);
+
+        if (data && data.isGroup) {
+          const resGroup = await fetch(
+            `${server}/familygroup/${data.idGroup}`
+          );
+          const dataGroup = await resGroup.json();
+          setLengthList(dataGroup.listItem.length); // Giả sử rằng bạn muốn đặt số lượng thành viên trong nhóm
+          setlengthRecipe(dataGroup.recipes.length);
+        }
+      };
+      getData();
+
+      getData();
+      return () => setLengthList(0);
+    }, [userId])
+  );
+
+  useEffect(() => {
+    const getData = async () => {
+      const res = await fetch(`${server}/user/${userId}`);
+      const data = await res.json();
+      setDataUser(data);
+
+      if (data && data.isGroup) {
+        const resGroup = await fetch(
+          `${server}/familygroup/${data.idGroup}`
+        );
+        const dataGroup = await resGroup.json();
+        setLengthList(dataGroup.listItem.length); // Giả sử rằng bạn muốn đặt số lượng thành viên trong nhóm
+        setlengthRecipe(dataGroup.recipes.length);
+      }
+    };
+    getData();
+  }, [userId, lengthList, lengthRecipe]);
 
   const logOut = () => {
     setIsLoading(true);
@@ -51,24 +96,31 @@ const DetailAccount = () => {
     console.log(nameGruop);
     try {
       const response = await axios.post(
-        `http://localhost:8889/api/familygruop/create/`,
+        `${server}/familygroup/create/`,
         {
           groupAdmin: userId,
-          name : nameGruop
+          name: nameGruop,
         }
       );
       console.log(response.data);
-      alert('Đã tạo nhóm')
-      hideModal()
+      alert("Đã tạo nhóm");
+      hideModal();
     } catch (error) {
       console.error(error);
     }
   };
-  const detailGruop = () =>{
-      navigation.navigate('detailgruop')
-      dispatch({ type: "SET_GROUP_ID", payload: dataUser.idGroup });
-    
-  }
+  const detailGruop = () => {
+    navigation.navigate("detailgruop");
+    dispatch({ type: "SET_GROUP_ID", payload: dataUser.idGroup });
+  };
+  const detailListItem = () => {
+    navigation.navigate("listitem");
+    dispatch({ type: "SET_GROUP_ID", payload: dataUser.idGroup });
+  };
+  const detailRecipes = () => {
+    navigation.navigate("recipes");
+    dispatch({ type: "SET_GROUP_ID", payload: dataUser.idGroup });
+  };
   return (
     <PaperProvider>
       <Portal>
@@ -149,26 +201,26 @@ const DetailAccount = () => {
 
           <List.Item
             title="Tủ Lạnh"
-            description="8 món"
+            description={lengthList}
             left={(props) => <List.Icon {...props} icon="food-fork-drink" />}
             right={() => (
               <Button
                 style={styles.btn_detail}
                 mode="contained"
-                onPress={() => console.log("Pressed")}>
+                onPress={() => detailListItem()}>
                 Xem tủ lạnh
               </Button>
             )}
           />
           <List.Item
             title="Công thức nấu ăn"
-            description="8 công thức"
+            description={lengthRecipe}
             left={(props) => <List.Icon {...props} icon="food-fork-drink" />}
             right={() => (
               <Button
                 style={styles.btn_detail}
                 mode="contained"
-                onPress={() => console.log("Pressed")}>
+                onPress={() => detailRecipes()}>
                 Xem chi tiết
               </Button>
             )}

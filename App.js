@@ -10,6 +10,8 @@ import { Provider } from "react-redux";
 import store from "./redux/store";
 import HomeScreen from "./components/HomeScreen";
 import Member from "./components/Member";
+import ListItem from "./components/ListItem";
+import Recipes from "./components/Recipes";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -40,6 +42,16 @@ export default function App() {
           <Stack.Screen
             name="detailgruop"
             component={Member}
+            options={{ headerShown: false }}
+          />
+           <Stack.Screen
+            name="listitem"
+            component={ListItem}
+            options={{ headerShown: false }}
+          />
+             <Stack.Screen
+            name="recipes"
+            component={Recipes}
             options={{ headerShown: false }}
           />
         

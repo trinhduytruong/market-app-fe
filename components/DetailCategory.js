@@ -3,13 +3,18 @@ import { View, Text, Image, FlatList, StyleSheet } from "react-native";
 import HeaderGoBack from "./HeaderGoBack";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import { useSelector } from "react-redux";
+import { useSelector , useDispatch } from "react-redux";
+import Toast from 'react-native-toast-message';
 
+import axios from "axios";
+import { server } from "../server";
 const DetailCategory = () => {
   const navigation = useNavigation();
   const idCategory = useSelector((state) => state.idCategory);
-  console.log(idCategory);
-  const handleDetailProduct = () => {
+  const userId = useSelector((state) => state.userId);
+  const dispatch = useDispatch();
+  const handleDetailProduct = (id) => {
+    dispatch({ type: "SET_PRODUCT_ID", payload: id });
     navigation.navigate("detailproduct");
   };
   const renderProductItem = ({ item }) => {
@@ -20,7 +25,7 @@ const DetailCategory = () => {
           resizeMode="contain"
           style={styles.img_product}
         />
-        <Text onPress={handleDetailProduct} style={styles.productName}>
+        <Text onPress={()=>handleDetailProduct(item._id)} style={styles.productName}>
           {item.name}
         </Text>
         <Text style={styles.productPrice}>{formatVND(item.price)} VND</Text>
@@ -28,31 +33,53 @@ const DetailCategory = () => {
         <Button
           icon="cart-arrow-down"
           mode="contained"
-          style={styles.btn_add_to_cart}>
+          style={styles.btn_add_to_cart}
+          onPress={()=>handleAddToCart(item._id)}
+          >
           Thêm vào giỏ
         </Button>
       </View>
     );
   };
-  const dataFake = [
-    {
-      name: "Cánh gà giữa nhập khẩu đông lạnh 500g (12 - 17 miếng)",
-      image:
-        "https://cdn.tgdd.vn/Products/Images/8790/297340/bhx/-202306211455508775.jpg",
-      price: 200000,
-    },
-    {
-      name: "Cánh gà giữa nhập khẩu đông lạnh 500g (12 - 17 miếng)",
-      image:
-        "https://cdn.tgdd.vn/Products/Images/8790/297340/bhx/-202306211455508775.jpg",
-      price: 200000,
-    },
-   
-  ];
+  const handleAddToCart = async (productId) => {
+    if (!userId) {
+      // Hiển thị thông báo nếu không có userId
+      Toast.show({
+        type: "error",
+        text1: "Lỗi",
+        text2: "Bạn chưa đăng nhập",
+      });
+      return; // Dừng hàm nếu không có userId
+    }
+  
+    try {
+      const response = await axios.post(
+        `${server}/user/addtocart/${userId}`,
+        {
+          foodId: productId,
+          quantity: 1, // hoặc số lượng mà người dùng chọn
+        }
+      );
+      Toast.show({
+        type: 'success',
+        text1: 'Thành công',
+        text2: 'Sản phẩm đã được thêm vào giỏ hàng.',
+      });
+      dispatch({ type: "UPDATE_CART" });
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể thêm sản phẩm vào giỏ hàng.',
+      });
+      
+    }
+  };
   const [listProduct , setListProduct] = useState([])
   useEffect(()=>{
     const getProduct = async () =>{
-      const res = await fetch(`http://localhost:8889/api/food/${idCategory}`)
+      const res = await fetch(`${server}/food/${idCategory}`)
       const data = await res.json()
       setListProduct(data)
     }
@@ -76,6 +103,7 @@ const DetailCategory = () => {
           numColumns={2}
         />
       </View>
+      <Toast />
     </View>
   );
 };

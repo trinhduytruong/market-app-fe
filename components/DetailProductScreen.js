@@ -5,6 +5,7 @@ import { Button } from "react-native-paper";
 import { useSelector } from "react-redux";
 import Toast from 'react-native-toast-message';
 import axios from "axios";
+import { server } from "../server";
 
 const DetailProductScreen = () => {
   const idProduct = useSelector((state) => state.idProduct);
@@ -14,7 +15,7 @@ const DetailProductScreen = () => {
   useEffect(() => {
     const getProduct = async () => {
       const res = await fetch(
-        `http://localhost:8889/api/food/detail/${idProduct}`
+        `${server}/food/detail/${idProduct}`
       );
       const data = await res.json();
       setDetailProduct(data);
@@ -42,7 +43,7 @@ const DetailProductScreen = () => {
   
     try {
       const response = await axios.post(
-        `http://localhost:8889/api/user/addtocart/${userId}`,
+        `${server}/user/addtocart/${userId}`,
         {
           foodId: productId,
           quantity: 1, // hoặc số lượng mà người dùng chọn
@@ -89,7 +90,7 @@ const DetailProductScreen = () => {
           </View>
 
           <Text style={styles.title_mota}>Mô tả sản phẩm</Text>
-          <Text style={styles.des}></Text>
+          <Text style={styles.des}>{detailProduct.des}</Text>
           <Text style={styles.title_mota}>NSX và HSD</Text>
           <Text style={styles.des}>
             {detailProduct.productionDate} - {detailProduct.expirationDate}

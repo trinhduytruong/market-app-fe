@@ -19,6 +19,7 @@ import { useSelector } from "react-redux";
 import Toast from 'react-native-toast-message';
 
 import axios from "axios";
+import { server } from "../server";
 const HomeScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
@@ -46,7 +47,7 @@ const HomeScreen = () => {
   
     try {
       const response = await axios.post(
-        `http://localhost:8889/api/user/addtocart/${userId}`,
+        `${server}/user/addtocart/${userId}`,
         {
           foodId: productId,
           quantity: 1, // hoặc số lượng mà người dùng chọn
@@ -98,7 +99,7 @@ const HomeScreen = () => {
   const [listProduct, setListProduct] = useState([]);
   useEffect(() => {
     const getCate = async () => {
-      const res = await fetch(`http://localhost:8889/api/category`);
+      const res = await fetch(`${server}/category`);
       const data = await res.json();
       setListCategory(data);
     };
@@ -106,7 +107,7 @@ const HomeScreen = () => {
 
     const getProduct = async () => {
       const res = await fetch(
-        `http://localhost:8889/api/food/6576e938b2c51899369460d9`
+        `${server}/food/6576e938b2c51899369460d9`
       );
       const data = await res.json();
       setListProduct(data);

@@ -1,62 +1,91 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TextInput } from "react-native";
+import { View, Text, StyleSheet, TextInput , TouchableOpacity } from "react-native";
 import HeaderGoBack from "./HeaderGoBack";
 
 import { useSelector } from "react-redux";
 import { Modal, Portal, List, Button, PaperProvider } from "react-native-paper";
 import axios from "axios";
+import { server } from "../server";
 const Member = () => {
   const groupId = useSelector((state) => state.idGroup);
-  console.log(groupId);
+  const userId = useSelector((state) => state.userId);
+  console.log(userId);
   const [listGroup, setListGroup] = useState([]);
   const [idAddUser, setIdAddUser] = useState("");
   useEffect(() => {
     const getMember = async () => {
       const res = await axios.get(
-        `http://localhost:8889/api/familygruop/${groupId}`
+        `${server}/familygroup/${groupId}`
       );
       const data = res.data;
       setListGroup(data);
     };
     getMember();
   }, []);
-  console.log(listGroup.members);
+  console.log((listGroup.groupAdmin));
   const [visible, setVisible] = React.useState(false);
 
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
   const containerStyle = { backgroundColor: "white", padding: 20 };
-  const handleAddMember = () => {
+  const handleAddMember = async () => {
     const memberData = {
-        groupId: groupId,
-        userId: idAddUser,
+      groupId: groupId,
+      userId: idAddUser,
     };
 
-    axios.post("http://localhost:8889/api/familygruop/addmember", memberData)
-        .then((response) => {
-            alert("Thêm thành viên thành công");
-            console.log("User Logged In:", response.data);
-            hideModal();
-            // Gọi lại hàm getMember để cập nhật danh sách thành viên
-            getMember();
-        })
-        .catch((error) => {
-            alert("Không có id này");
-        });
-};
+    try {
+      const response = await axios.post(
+        `${server}/familygroup/addmember`,
+        memberData
+      );
+      alert("Thêm thành viên thành công");
+      console.log("User Logged In:", response.data);
+      hideModal();
+      // Gọi lại hàm getMember để cập nhật danh sách thành viên
+      getMember();
+    } catch (error) {
+      // Kiểm tra loại lỗi và hiển thị thông báo phù hợp
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        alert(error.response.data.message);
+      } else {
+        alert("Không có id này");
+      }
+    }
+  };
 
-// Để sử dụng hàm getMember trong useEffect và handleAddMember
-useEffect(() => {
-    const getMember = async () => {
-        const res = await axios.get(
-            `http://localhost:8889/api/familygruop/${groupId}`
-        );
-        const data = res.data;
-        setListGroup(data);
-    };
+  const getMember = async () => {
+    const res = await axios.get(
+      `${server}/familygroup/${groupId}`
+    );
+    const data = res.data;
+    setListGroup(data);
+  };
 
+  const handleRemoveMember = async (idUser) => {
+    try {
+      await axios.delete(
+        `${server}/familygroup/deletemember/`,
+        {
+          data: { 
+            groupId: groupId,
+            userId : idUser
+           },
+        }
+      );
+     getMember()
+    } catch (error) {
+      console.error("Error removing product from cart:", error);
+    }
+  };
+  // Để sử dụng hàm getMember trong useEffect và handleAddMember
+  useEffect(() => {
     getMember();
-}, [groupId]);
+  }, [groupId]);
   return (
     <PaperProvider>
       <Portal>
@@ -99,12 +128,20 @@ useEffect(() => {
       </Button>
 
       {listGroup.members &&
-        (listGroup.members).map((value) => {
+        listGroup.members.map((value) => {
           return (
             <List.Item
-            key={value._id}
+              key={value._id}
               title={value.name}
               left={(props) => <List.Icon {...props} icon="account-check" />}
+
+              right={() => 
+                userId === listGroup.groupAdmin && (
+                  <TouchableOpacity onPress={()=>handleRemoveMember(value._id)}>
+                    <List.Icon icon="delete" />
+                  </TouchableOpacity>
+                )
+              }
             />
           );
         })}

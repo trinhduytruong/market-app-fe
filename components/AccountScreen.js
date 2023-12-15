@@ -14,6 +14,7 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 
 import { useNavigation } from '@react-navigation/native';
+import { server } from "../server";
 
 const AccountScreen = () => {
   const [index, setIndex] = useState(0);
@@ -39,13 +40,14 @@ const AccountScreen = () => {
     };
 
     axios
-      .post("http://localhost:8889/api/user/register", userData)
+      .post(`${server}/user/register`, userData)
       .then((response) => {
         alert("Đăng ký thành công");
         // handle response
         setIndex(1);
       })
       .catch((error) => {
+        console.log(error);
         alert("Thông tin không hợp lệ");
       });
   }
@@ -57,7 +59,7 @@ const AccountScreen = () => {
     };
 
     axios
-      .post("http://localhost:8889/api/user/login", loginData)
+      .post(`${server}/user/login`, loginData)
       .then((response) => {
         alert("Đăng nhập thành công");
         // Dispatch action to Redux store

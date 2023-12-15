@@ -5,6 +5,7 @@ import { TextInput } from "react-native-paper";
 import { Button } from "react-native-paper";
 
 import axios from "axios";
+import { server } from "../server";
 const SearchScreen = () => {
   const [dataSearch , setDataSearch ] = useState([])
   const [keyWord , setKeyWord] = useState('')
@@ -45,7 +46,7 @@ const SearchScreen = () => {
     console.log(keyWord);
     try {
       const response = await axios.post(
-        `http://localhost:8889/api/food/search/`,
+        `${server}/food/search/`,
         {
           keyword: keywordBody 
         }

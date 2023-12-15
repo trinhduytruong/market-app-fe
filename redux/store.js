@@ -7,6 +7,7 @@ const initialState = {
   idProduct: null,
   changeCart: false,
   idGroup: null,
+  
 };
 
 // Reducer function
