@@ -20,7 +20,7 @@ import axios from "axios";
 import { server } from "../server";
 const DetailAccount = () => {
   const navigation = useNavigation();
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(false); 
   const [isLoading, setIsLoading] = useState(false);
   const [nameGruop, setNameGruop] = useState("");
   const [dataUser, setDataUser] = useState();
@@ -133,7 +133,7 @@ const DetailAccount = () => {
             onChangeText={(text) => setNameGruop(text)}
             mode="outlined"
             label="Tên gia đình"
-            placeholder="Tên gia đinh"
+            placeholder="Tên gia đình"
             right={<TextInput.Affix text="/100" />}
           />
           <View style={styles.btn_modal}>

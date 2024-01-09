@@ -11,6 +11,7 @@ const DetailProductScreen = () => {
   const idProduct = useSelector((state) => state.idProduct);
   const userId = useSelector((state) => state.userId);
   const [detailProduct, setDetailProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     const getProduct = async () => {
@@ -46,7 +47,7 @@ const DetailProductScreen = () => {
         `${server}/user/addtocart/${userId}`,
         {
           foodId: productId,
-          quantity: 1, // hoặc số lượng mà người dùng chọn
+          quantity: quantity, 
         }
       );
 
@@ -65,6 +66,14 @@ const DetailProductScreen = () => {
         text2: 'Không thể thêm sản phẩm vào giỏ hàng.',
       });
     }
+  };
+  const increaseQuantity = () => {
+    setQuantity(prevQuantity => prevQuantity + 1);
+  };
+
+  // Function to decrease quantity
+  const decreaseQuantity = () => {
+    setQuantity(prevQuantity => (prevQuantity > 1 ? prevQuantity - 1 : 1));
   };
   return (
     <View>
@@ -88,13 +97,19 @@ const DetailProductScreen = () => {
               Thêm vào giỏ
             </Button>
           </View>
-
+          <View style={styles.quantitySelector}>
+            <Button onPress={decreaseQuantity} style={styles.quantityButton}>-</Button>
+            <Text style={styles.quantityText}>{quantity}</Text>
+            <Button onPress={increaseQuantity} style={styles.quantityButton}>+</Button>
+          </View>
           <Text style={styles.title_mota}>Mô tả sản phẩm</Text>
           <Text style={styles.des}>{detailProduct.des}</Text>
           <Text style={styles.title_mota}>NSX và HSD</Text>
           <Text style={styles.des}>
             {detailProduct.productionDate} - {detailProduct.expirationDate}
           </Text>
+
+         
         </View>
       )}
       <Toast  />
@@ -138,5 +153,32 @@ const styles = StyleSheet.create({
     color: "#ff0000",
     fontWeight: "bold",
     fontSize: 25,
+  },
+  quantitySelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f2f2f2', // Light grey background for the selector area
+    borderRadius: 10, // Rounded corners
+    marginHorizontal: 20, // Spacing from the screen edges
+    marginTop: 10, // Space above the selector
+  },
+  quantityButton: {
+    marginHorizontal: 15,
+    width: 35,
+    height: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00CC33', // Button color
+    borderRadius: 5, // Rounded corners for buttons
+    elevation: 3, // Shadow effect for buttons
+  },
+  quantityText: {
+    marginLeft : 20,
+    fontSize: 18,
+    fontWeight: 'bold', // Bold font for quantity
+    color: '#333333', // Dark text color for better readability
+    paddingHorizontal: 10, // Spacing around the text
   },
 });

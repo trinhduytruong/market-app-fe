@@ -13,7 +13,7 @@ import { Tab } from "@rneui/themed";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from "@react-navigation/native";
 import { server } from "../server";
 
 const AccountScreen = () => {
@@ -22,11 +22,11 @@ const AccountScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [phoneLogin , setPhoneLogin] = useState("")
-  const [passwordLogin , setPassWordLogin] = useState("")
-  
+  const [phoneLogin, setPhoneLogin] = useState("");
+  const [passwordLogin, setPassWordLogin] = useState("");
+
   const dispatch = useDispatch();
-  const navigate = useNavigation()
+  const navigate = useNavigation();
   const handleRegister = () => {
     if (password !== confirmPassword) {
       alert("Passwords do not match");
@@ -50,7 +50,7 @@ const AccountScreen = () => {
         console.log(error);
         alert("Thông tin không hợp lệ");
       });
-  }
+  };
 
   const handleLogin = () => {
     const loginData = {
@@ -65,12 +65,12 @@ const AccountScreen = () => {
         // Dispatch action to Redux store
         dispatch({ type: "SET_USER_ID", payload: response.data.user._id });
         console.log("User Logged In:", response.data.user);
-        navigate.navigate('detailaccount')
+        navigate.navigate("detailaccount");
       })
       .catch((error) => {
         alert("Thông tin đăng nhập không chính xác");
       });
-  }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -97,7 +97,7 @@ const AccountScreen = () => {
               <View style={styles.inputView}>
                 <TextInput
                   style={styles.TextInput}
-                  placeholder="Số điện thoại."
+                  placeholder="Số điện thoại"
                   placeholderTextColor="#fff"
                   onChangeText={(text) => setPhoneNumber(text)}
                   autoCapitalize="none"
@@ -106,7 +106,7 @@ const AccountScreen = () => {
               <View style={styles.inputView}>
                 <TextInput
                   style={styles.TextInput}
-                  placeholder="Mật khẩu."
+                  placeholder="Mật khẩu"
                   placeholderTextColor="#fff"
                   secureTextEntry={true}
                   onChangeText={(text) => setPassword(text)}
@@ -125,7 +125,8 @@ const AccountScreen = () => {
               </View>
               <TouchableOpacity
                 style={styles.loginBtn}
-                onPress={handleRegister}>
+                onPress={handleRegister}
+              >
                 <Text style={styles.loginText}>Đăng Ký</Text>
               </TouchableOpacity>
             </View>
@@ -139,7 +140,7 @@ const AccountScreen = () => {
               <View style={styles.inputView}>
                 <TextInput
                   style={styles.TextInput}
-                  placeholder="Số điện thoại."
+                  placeholder="Số điện thoại"
                   placeholderTextColor="#fff"
                   onChangeText={(text) => setPhoneLogin(text)}
                   autoCapitalize="none"
@@ -148,10 +149,10 @@ const AccountScreen = () => {
               <View style={styles.inputView}>
                 <TextInput
                   style={styles.TextInput}
-                  placeholder="Mật khẩu."
+                  placeholder="Mật khẩu"
                   placeholderTextColor="#fff"
                   secureTextEntry={true}
-                  onChangeText={(text) =>setPassWordLogin(text)}
+                  onChangeText={(text) => setPassWordLogin(text)}
                   autoCapitalize="none"
                 />
               </View>
@@ -163,7 +164,6 @@ const AccountScreen = () => {
           </View>
         )}
       </View>
-      
     </View>
   );
 };
@@ -196,6 +196,7 @@ const styles = StyleSheet.create({
     height: 50,
     padding: 10,
     marginLeft: 20,
+    marginRight: 20,
   },
   forgot_button: {
     height: 30,
