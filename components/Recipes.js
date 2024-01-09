@@ -179,7 +179,7 @@ const Recipes = () => {
           </View>
         </Modal>
       </Portal>
-      <HeaderGoBack title="n" />
+      <HeaderGoBack title="Danh sách công thức" />
 
       <Button
         style={styles.btn_add}
