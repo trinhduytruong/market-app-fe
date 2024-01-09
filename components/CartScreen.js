@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: "absolute",
-    bottom: "7%",
+    bottom: "9%",
     left: 0,
     right: 0,
     backgroundColor: "white",
