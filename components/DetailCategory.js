@@ -1,11 +1,10 @@
-import React , { useEffect , useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Image, FlatList, StyleSheet } from "react-native";
 import HeaderGoBack from "./HeaderGoBack";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import { useSelector , useDispatch } from "react-redux";
-import Toast from 'react-native-toast-message';
-
+import { useSelector, useDispatch } from "react-redux";
+import Toast from "react-native-toast-message";
 import axios from "axios";
 import { server } from "../server";
 const DetailCategory = () => {
@@ -25,7 +24,10 @@ const DetailCategory = () => {
           resizeMode="contain"
           style={styles.img_product}
         />
-        <Text onPress={()=>handleDetailProduct(item._id)} style={styles.productName}>
+        <Text
+          onPress={() => handleDetailProduct(item._id)}
+          style={styles.productName}
+        >
           {item.name}
         </Text>
         <Text style={styles.productPrice}>{formatVND(item.price)} VND</Text>
@@ -34,8 +36,8 @@ const DetailCategory = () => {
           icon="cart-arrow-down"
           mode="contained"
           style={styles.btn_add_to_cart}
-          onPress={()=>handleAddToCart(item._id)}
-          >
+          onPress={() => handleAddToCart(item._id)}
+        >
           Thêm vào giỏ
         </Button>
       </View>
@@ -51,40 +53,37 @@ const DetailCategory = () => {
       });
       return; // Dừng hàm nếu không có userId
     }
-  
+
     try {
-      const response = await axios.post(
-        `${server}/user/addtocart/${userId}`,
-        {
-          foodId: productId,
-          quantity: 1, // hoặc số lượng mà người dùng chọn
-        }
-      );
+      const response = await axios.post(`${server}/user/addtocart/${userId}`, {
+        foodId: productId,
+        quantity: 1, // hoặc số lượng mà người dùng chọn
+      });
       Toast.show({
-        type: 'success',
-        text1: 'Thành công',
-        text2: 'Sản phẩm đã được thêm vào giỏ hàng.',
+        type: "success",
+        text1: "Thành công",
+        text2: "Sản phẩm đã được thêm vào giỏ hàng.",
       });
       dispatch({ type: "UPDATE_CART" });
     } catch (error) {
       console.error("Error adding product to cart:", error);
       Toast.show({
-        type: 'error',
-        text1: 'Lỗi',
-        text2: 'Không thể thêm sản phẩm vào giỏ hàng.',
+        type: "error",
+        text1: "Lỗi",
+        text2: "Không thể thêm sản phẩm vào giỏ hàng.",
       });
-      
     }
   };
-  const [listProduct , setListProduct] = useState([])
-  useEffect(()=>{
-    const getProduct = async () =>{
-      const res = await fetch(`${server}/food/${idCategory}`)
-      const data = await res.json()
-      setListProduct(data)
-    }
-    getProduct()
-  },[])
+
+  const [listProduct, setListProduct] = useState([]);
+  useEffect(() => {
+    const getProduct = async () => {
+      const res = await fetch(`${server}/food/${idCategory}`);
+      const data = await res.json();
+      setListProduct(data);
+    };
+    getProduct();
+  }, []);
   function formatVND(amount) {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -94,7 +93,6 @@ const DetailCategory = () => {
   return (
     <View>
       <HeaderGoBack title="Danh mục sản phẩm" />
-
       <View style={styles.main_product}>
         <FlatList
           data={listProduct}
@@ -110,7 +108,6 @@ const DetailCategory = () => {
 
 export default DetailCategory;
 const styles = StyleSheet.create({
- 
   item_product: {
     flex: 1,
     margin: 5,

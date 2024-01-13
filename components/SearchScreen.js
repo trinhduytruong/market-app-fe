@@ -1,14 +1,26 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity} from "react-native";
+import React, { useEffect, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 import HeaderGoBack from "./HeaderGoBack";
 import { TextInput } from "react-native-paper";
 import { Button } from "react-native-paper";
-
+import Toast from "react-native-toast-message";
 import axios from "axios";
 import { server } from "../server";
 const SearchScreen = () => {
-  const [dataSearch , setDataSearch ] = useState([])
-  const [keyWord , setKeyWord] = useState('')
+  const [dataSearch, setDataSearch] = useState([]);
+  const [keyWord, setKeyWord] = useState("");
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const userId = useSelector((state) => state.userId);
   const dataFake = [
     {
       name: "Cánh gà giữa nhập khẩu đông lạnh 500g (12 - 17 miếng)",
@@ -23,6 +35,12 @@ const SearchScreen = () => {
       price: 200000,
     },
   ];
+
+  const handleDetailProduct = (id) => {
+    dispatch({ type: "SET_PRODUCT_ID", payload: id });
+    navigation.navigate("detailproduct");
+  };
+
   const renderProductItem = ({ item }) => {
     return (
       <View style={styles.item_product}>
@@ -31,42 +49,93 @@ const SearchScreen = () => {
           resizeMode="contain"
           style={styles.img_product}
         />
-        <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productPrice}>{item.price} VND</Text>
+        <Text
+          onPress={() => handleDetailProduct(item._id)}
+          style={styles.productName}
+        >
+          {item.name}
+        </Text>
+        <Text style={styles.productPrice}>{formatVND(item.price)} VND</Text>
+
         <Button
           icon="cart-arrow-down"
           mode="contained"
-          style={styles.btn_add_to_cart}>
+          style={styles.btn_add_to_cart}
+          onPress={() => handleAddToCart(item._id)}
+        >
           Thêm vào giỏ
         </Button>
       </View>
     );
   };
+
+  function formatVND(amount) {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  }
+
   const handleSearch = async (keywordBody) => {
     console.log(keyWord);
     try {
-      const response = await axios.post(
-        `${server}/food/search/`,
-        {
-          keyword: keywordBody 
-        }
-      );
+      const response = await axios.post(`${server}/food/search/`, {
+        keyword: keywordBody,
+      });
       console.log(response);
-      setDataSearch(response.data)
+      setDataSearch(response.data);
     } catch (error) {
       console.error("Error adding product to cart:", error);
+    }
+  };
+
+  const handleAddToCart = async (productId) => {
+    if (!userId) {
+      // Hiển thị thông báo nếu không có userId
+      Toast.show({
+        type: "error",
+        text1: "Lỗi",
+        text2: "Bạn chưa đăng nhập",
+      });
+      return; // Dừng hàm nếu không có userId
+    }
+
+    try {
+      const response = await axios.post(`${server}/user/addtocart/${userId}`, {
+        foodId: productId,
+        quantity: 1,
+      });
+
+      // Xử lý phản hồi từ server
+      console.log(response.data);
+      Toast.show({
+        type: "success",
+        text1: "Thành công",
+        text2: "Sản phẩm đã được thêm vào giỏ hàng.",
+      });
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+      Toast.show({
+        type: "error",
+        text1: "Lỗi",
+        text2: "Không thể thêm sản phẩm vào giỏ hàng.",
+      });
     }
   };
   return (
     <View style={styles.container}>
       <HeaderGoBack title="Tìm kiếm" />
-      <TextInput label="Từ khoá"   onChangeText={text => setKeyWord(text)} right={<TextInput.Icon icon="magnify" />} />
+      <TextInput
+        label="Từ khoá"
+        onChangeText={(text) => setKeyWord(text)}
+        right={<TextInput.Icon icon="magnify" />}
+      />
       <Button
         icon="magnify"
         mode="contained"
-        style={styles.btn_searh}
-        onPress={()=>handleSearch(keyWord)}
-        >
+        style={styles.btn_search}
+        onPress={() => handleSearch(keyWord)}
+      >
         Tìm kiếm
       </Button>
 
@@ -81,6 +150,7 @@ const SearchScreen = () => {
           numColumns={2}
         />
       </View>
+      <Toast />
     </View>
   );
 };
@@ -90,7 +160,7 @@ const styles = StyleSheet.create({
   main_product: {
     height: 600,
   },
-  btn_searh: {
+  btn_search: {
     marginVertical: 20,
     backgroundColor: "#00CC33",
   },
